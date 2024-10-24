@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+import { Cross1Icon } from "@radix-ui/react-icons"
+
 // import * as PDFJS from  'pdfjs-dist/build/pdf.mjs'
 // import * as PDFJSWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import * as PDFJS from 'pdfjs-dist'
@@ -26,7 +28,7 @@ PDFJS.GlobalWorkerOptions.workerSrc = new URL(
 type PdfFileCardProps = React.ComponentProps<typeof Card> & {
     uuid: string;
     onFileSelect?: (uuid: string, file: File) => void;
-    onFileRemove?: (uuid: string) => void;
+    onRemoveCard?: (uuid: string) => void;
     onAddCard?: () => void;
 }
 
@@ -69,7 +71,10 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
 
     }
 
-
+    function onRemoveCard() {
+        props.onRemoveCard && props.onRemoveCard(props.uuid);
+        setIsLoaded(false);
+    }
     
     function renderCanvas(data : Uint8Array) {
         const canvas = canvasRef.current;
@@ -105,7 +110,11 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
     }
     return (
         <>
-            <Card className={cn("w-[380px]", className)} {...props}>
+            <Card className={cn("w-[320px] relative", className)} {...props}>
+                <Cross1Icon 
+                    className={!isLoaded ? 'hidden' : 'absolute h-4 w-4 top-3 right-3 hover:bg-red-100 text-red-500'}
+                    onClick={onRemoveCard}
+                />
                 <CardContent className="flex h-full w-full justify-center items-center">
                     <div className='size-full'>
                         <Button variant="ghost" className={isLoaded ? "hidden" : "size-full"} onClick={onButtonClick}>

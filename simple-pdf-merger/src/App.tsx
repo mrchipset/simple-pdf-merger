@@ -45,19 +45,34 @@ function App() {
     }))
   }
 
+  function onRemoveCard(uuid : string) {
+    setTimeout(() => setCardFileMaps((prevState) => {
+      const newCardFileMaps = {...prevState };
+
+      // delete new file and add later.
+      Object.values(prevState).forEach((cardFileMap:any) => {
+        if (cardFileMap.file == null) {
+          delete newCardFileMaps[cardFileMap.uuid as keyof typeof newCardFileMaps];
+        }
+      });
+
+      delete newCardFileMaps[uuid as keyof typeof newCardFileMaps];
+      const _uuid = uuidv4();
+      const _newCardFileMaps = {...newCardFileMaps, [uuid]: {
+        'uuid': _uuid,
+        'file': null
+      }
+      };
+      return _newCardFileMaps;
+    }), 0);
+  }
+
   useEffect(() => {
     onAddCard();
     return () => { setCardFileMaps({}); };
   }, []);
 
-  const generatedCards = 
-    Object.values(cardFileMaps).map((card : any) => {
-      return <PdfFileCard uuid={card.uuid}
-        className='card'
-        onFileSelect={onFileSelect}
-        onAddCard={onAddCard} />
-  });
-  
+
 
   async function mergePdfFiles(pdfFiles: File[]) {
     const render = async() => {
@@ -87,6 +102,16 @@ function App() {
     });
     mergePdfFiles(files);
   }
+
+  const generatedCards = 
+  Object.values(cardFileMaps).map((card : any) => {
+    return <PdfFileCard uuid={card.uuid}
+      className='card'
+      onFileSelect={onFileSelect}
+      onRemoveCard={onRemoveCard}
+      onAddCard={onAddCard} />
+  });
+
 
   return (
     <>
