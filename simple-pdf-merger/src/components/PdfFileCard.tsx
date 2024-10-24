@@ -52,7 +52,7 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
             props.onAddCard && props.onAddCard();
         }
        
-        console.log(file);
+        // console.log(file);
         // add new file to the list
         // render the first page
         const reader = new FileReader();

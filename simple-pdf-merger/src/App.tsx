@@ -20,6 +20,7 @@ import { Button } from './components/ui/button';
 // import { Switch } from "@/components/ui/switch"
 
 
+import PDFMerger from 'pdf-merger-js/browser';
 
 
 
@@ -44,14 +45,6 @@ function App() {
     }))
   }
 
-  function onClearCards() {
-    const uuid = uuidv4();
-    setCardFileMaps((prevState) => ({[uuid]: {
-      'uuid': uuid,
-      'file': null
-    }}));
-  }
-
   useEffect(() => {
     onAddCard();
     return () => { setCardFileMaps({}); };
@@ -65,15 +58,41 @@ function App() {
         onAddCard={onAddCard} />
   });
   
-  function mergePdf() {
 
+  async function mergePdfFiles(pdfFiles: File[]) {
+    const render = async() => {
+      const merger = new PDFMerger();
+      // pdfFiles.forEach(async file => {
+      //   await merger.add(file);
+      // });
+  
+      for(const file of pdfFiles) {
+        await merger.add(file);
+      }
+      // const mergedPdf = await merger.saveAsBlob();
+      // const url = URL.createObjectURL(mergedPdf);
+      // window.open(url);
+      await merger.save('merged.pdf');
+    }
+
+    render().catch(err => console.log('error', err));
+  }
+
+  function mergePdf() {
+    const files:File[]= [];
+    Object.values(cardFileMaps).map((card : any) => {
+      if (card.file!== null) {
+        files.push(card.file);
+      }
+    });
+    mergePdfFiles(files);
   }
 
   return (
     <>
     <div className='flex flex-col px-8 h-screen'>
-      <h2 className='font-bold text-4xl'>PDF Merge</h2>
-      <div className="grid grid-cols-5 pt-8 gap-1">
+      <h2 className='font-bold text-4xl mb-4'>PDF Merge</h2>
+      <div className="grid grid-cols-4  gap-4">
         {
           generatedCards
         }
@@ -92,7 +111,7 @@ function App() {
         Clear
       </Button>
 
-      <Button className="w-20 h-16" onClick={mergePdf}>Merge</Button>
+      <Button className="w-20 h-16" onClick={async () => { await mergePdf();}}>Merge</Button>
     </footer>
     </>
   )
