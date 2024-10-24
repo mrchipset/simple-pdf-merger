@@ -14,16 +14,21 @@ import {
 } from "@/components/ui/card"
 
 // import * as PDFJS from  'pdfjs-dist/build/pdf.mjs'
-// import * as PDFJSWorker from 'pdfjs-dist/legacy/build/pdf.worker.mjs';
+// import * as PDFJSWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import * as PDFJS from 'pdfjs-dist'
 // PDFJS.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${PDFJS.version}/legacy/build/pdf.worker.min.js`
-// PDFJS.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.min.js';
+// PDFJS.GlobalWorkerOptions.workerSrc = 'pdf.js/build/pdf.worker.min.js';
 PDFJS.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
     import.meta.url,
   ).toString();
 
-type PdfFileCardProps = React.ComponentProps<typeof Card>
+type PdfFileCardProps = React.ComponentProps<typeof Card> & {
+    uuid: string;
+    onFileSelect?: (uuid: string, file: File) => void;
+    onFileRemove?: (uuid: string) => void;
+    onAddCard?: () => void;
+}
 
 function PdfFileCard({ className, ...props }: PdfFileCardProps) {
     const [ isLoaded, setIsLoaded ] = useState(false)
@@ -41,8 +46,12 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
             return;
         }
         const file = e.target.files[0];
-        
-        setIsLoaded(true);
+        if (!isLoaded) {
+            props.onFileSelect && props.onFileSelect(props.uuid, file);
+            setIsLoaded(true);
+            props.onAddCard && props.onAddCard();
+        }
+       
         console.log(file);
         // add new file to the list
         // render the first page
@@ -57,7 +66,6 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
         };
      
         reader.readAsArrayBuffer(file);
-
 
     }
 
@@ -81,7 +89,7 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
                         canvas.height =viewport.height * ratio;
                     }
 
-                    ctx?.setTransform(ratio, 0, 0, ratio, 0, 0);
+                    ctx?.setTransform(ratio * 1.0, 0, 0, ratio * 1.0, 0, 0);
 
 
                     const renderContext = {
