@@ -11,6 +11,16 @@ import PDFMerger from 'pdf-merger-js/browser';
 import { Card } from './components/ui/card';
 
 
+import type { DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
+import { DndContext, useSensors, useSensor, PointerSensor } from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy
+} from '@dnd-kit/sortable';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
+
+
 type Card = {
   uuid: string;
   file: File | null;
@@ -19,6 +29,14 @@ type Card = {
 function App() {
   const [ cards, setCards ] = useState<Card[]>([]);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  )
+
   function onFileSelect(uuid: string, file : File) {
     setCards((prevState) => ([...prevState, {
       'uuid': uuid,
@@ -26,13 +44,6 @@ function App() {
     }]))
   }
 
-  // function onAddCard() {
-  //   const uuid = uuidv4();
-  //   setCards((prevState) => ([...prevState, {
-  //     'uuid': uuid,
-  //     'file': null
-  //   }]))
-  // }
 
   function onRemoveCard(uuid : string) {
     setTimeout(() => setCards((prevState) => {
@@ -43,19 +54,12 @@ function App() {
       if (index !== -1) {
         newCards.splice(index, 1);
       }
-      
-
-      // const _uuid = uuidv4();
-      // const _newCards = [...newCards, {
-      //   'uuid': _uuid,
-      //   'file': null
-      // }];
+    
       return newCards;
     }), 0);
   }
 
   useEffect(() => {
-    // onAddCard();
     setCards([]);
     return () => { setCards([]); };
   }, []);
@@ -106,16 +110,49 @@ function App() {
   };
     
 
+  const getMovedIndex = (array: Card[], dragItem: DragMoveEvent) => {
+    const { active, over } = dragItem;
+    const activeIndex = array.findIndex((item: Card) => item.uuid === active.id);
+    const overIndex = array.findIndex((item: Card)  => item.uuid === over?.id);
+
+    return {
+      activeIndex: activeIndex !== -1 ? activeIndex : 0,
+      overIndex: overIndex!== -1 ? overIndex : activeIndex
+    }
+  }
+
+  const dragEndEvent = (dragItem: DragEndEvent) => {
+    const { active, over }  = dragItem;
+    if (!active ||!over) {
+      return;
+    }
+
+    const _cards  = [...cards];
+    const { activeIndex, overIndex }  = getMovedIndex(_cards, dragItem);
+    if (activeIndex !== overIndex) {
+      const _finalCards = arrayMove(_cards, activeIndex, overIndex);
+      setCards(_finalCards);
+    }
+
+  }
 
   return (
     <>
     <div className='flex flex-col px-8 h-screen'>
       <h2 className='font-bold text-4xl mb-4'>PDF Merge</h2>
-      <div className="grid grid-cols-4  gap-4">
+      <DndContext sensors={sensors} onDragEnd={dragEndEvent}>
+        <SortableContext
+          items={cards.map((card: Card) => card.uuid)}
+          strategy={rectSortingStrategy}
+        >
+        <div className="grid grid-cols-4  gap-4">
         {
           generatedCards()
         }
-      </div>
+        </div>
+        </SortableContext>
+      </DndContext>
+
 
     </div>
     <footer className="w-full fixed bottom-0 h-20 justify-left mx-2 flex space-x-4">

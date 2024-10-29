@@ -15,6 +15,9 @@ import {
 
 import { Cross1Icon } from "@radix-ui/react-icons"
 
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+
 // import * as PDFJS from  'pdfjs-dist/build/pdf.mjs'
 // import * as PDFJSWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import * as PDFJS from 'pdfjs-dist'
@@ -33,6 +36,19 @@ type PdfFileCardProps = React.ComponentProps<typeof Card> & {
 
 function PdfFileCard({ className, ...props }: PdfFileCardProps) {
     const [ isLoaded, setIsLoaded ] = useState(false)
+    const { setNodeRef, attributes, listeners, transform, transition } =
+     useSortable({
+         id: props.uuid,
+         transition: {
+            duration: 500,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1",
+         }
+    })
+
+    const styles = {
+        transform: CSS.Transform.toString(transform),
+        transition
+    }
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -108,7 +124,11 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
         });
     }
     return (
-        <>
+        <div ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+            style={styles}
+            className='draggable-item'>
             <Card className={cn("w-[320px] h-[380px] relative", className)} {...props}>
                 <Cross1Icon 
                     className={!isLoaded ? 'hidden' : 'absolute h-4 w-4 top-3 right-3 hover:bg-red-100 text-red-500'}
@@ -131,7 +151,7 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
                     </div>
                 </CardContent>
             </Card>
-        </>
+        </div>
     )
 }
 
