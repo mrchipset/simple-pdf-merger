@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+//   CardDescription,
+//   CardFooter,
+//   CardHeader,
+//   CardTitle,
 } from "@/components/ui/card"
 
 import { Cross1Icon } from "@radix-ui/react-icons"
@@ -27,9 +27,8 @@ PDFJS.GlobalWorkerOptions.workerSrc = new URL(
 
 type PdfFileCardProps = React.ComponentProps<typeof Card> & {
     uuid: string;
-    onFileSelect?: (uuid: string, file: File) => void;
-    onRemoveCard?: (uuid: string) => void;
-    onAddCard?: () => void;
+    fileSelect?: (uuid: string, file: File) => void;
+    removeCard?: (uuid: string) => void;
 }
 
 function PdfFileCard({ className, ...props }: PdfFileCardProps) {
@@ -49,9 +48,9 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
         }
         const file = e.target.files[0];
         if (!isLoaded) {
-            props.onFileSelect && props.onFileSelect(props.uuid, file);
+            props.fileSelect && props.fileSelect(props.uuid, file);
             setIsLoaded(true);
-            props.onAddCard && props.onAddCard();
+            // props.onAddCard && props.onAddCard();
         }
        
         // console.log(file);
@@ -72,7 +71,7 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
     }
 
     function onRemoveCard() {
-        props.onRemoveCard && props.onRemoveCard(props.uuid);
+        props.removeCard && props.removeCard(props.uuid);
         setIsLoaded(false);
     }
     
@@ -110,7 +109,7 @@ function PdfFileCard({ className, ...props }: PdfFileCardProps) {
     }
     return (
         <>
-            <Card className={cn("w-[320px] relative", className)} {...props}>
+            <Card className={cn("w-[320px] h-[380px] relative", className)} {...props}>
                 <Cross1Icon 
                     className={!isLoaded ? 'hidden' : 'absolute h-4 w-4 top-3 right-3 hover:bg-red-100 text-red-500'}
                     onClick={onRemoveCard}
