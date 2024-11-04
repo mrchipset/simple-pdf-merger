@@ -18,7 +18,6 @@ import {
   SortableContext,
   rectSortingStrategy
 } from '@dnd-kit/sortable';
-import { restrictToParentElement } from '@dnd-kit/modifiers';
 
 
 type Card = {
